@@ -51,6 +51,11 @@ export default class Play extends React.Component {
         //     console.log(123, e)
         // })
     }
+    // 状态变化时变化函数
+    statusChange = (value = {}) => {
+        this.status = { ...this.status, ...value };
+        return this.status;
+    }
     // 构建数据
     createGame() {
         let { grade, gradeConfig } = this.status;
@@ -127,7 +132,8 @@ export default class Play extends React.Component {
             return;
         }
         if (isMines) {
-            this.gameOver(index)
+            this.statusChange({ status: 4 });
+            this.gameOver(index);
         } else {
             this.computeMinesHandle(index);
         }
