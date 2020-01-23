@@ -1,0 +1,14 @@
+.info {
+	padding: 5px 0;
+	line-height: 36px;
+	text-align: center;
+}
+.info > * {
+	vertical-align: middle;
+	font-size: 14px;
+	color: #333;
+	text-decoration: none;
+}
+.info > a:hover {
+	text-decoration: underline;
+}

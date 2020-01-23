@@ -1,0 +1,17 @@
+.header {
+	.userFaceContent {
+		text-align: center;
+		padding: 20px;
+	}
+	.userFace {
+		height: 80px;
+		width: 80px;
+		margin: 0 auto;
+		display: inline-block;
+		border-radius: 100%;
+		overflow: hidden;
+	}
+	.userFace > img {
+		width: 100%;
+	}
+}

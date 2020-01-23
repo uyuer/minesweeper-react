@@ -1,0 +1,47 @@
+.wrapper {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+}
+.menu {
+	width: 300px;
+	height: inherit;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+.board {
+	flex: 1;
+	height: inherit;
+	background: #71ccd1;
+}
+:global {
+	.resetTable {
+		.ant-table {
+			.cell {
+				padding: 7px 1px;
+			}
+			.ant-table-title,
+			.ant-table-footer,
+			.ant-table-body tbody tr td {
+				padding: 0;
+			}
+			.ant-table-title,
+			.ant-table-footer {
+				border: none;
+			}
+			.ant-table-header thead tr th {
+				@extend .cell;
+				height: 36px;
+				box-sizing: border-box;
+				padding: 0;
+			}
+			.ant-table-body tbody tr td {
+				@extend .cell;
+				border: none;
+				padding: 5px 1px
+			}
+		}
+	}
+}

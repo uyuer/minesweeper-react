@@ -1,0 +1,89 @@
+.wrapper {
+	height: 100%;
+	width: 100%;
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background: rgba(#333, 0.2);
+	text-align: center;
+	line-height: 100%;
+	.loading {
+		$size: 12px;
+		display: inline-block;
+		position: absolute;
+		top: 70%;
+		left: 50%;
+		margin-left: -30px;
+		width: 50px;
+		height: 30px;
+		@keyframes columnMove {
+			0% {
+				top: 0;
+			}
+			50% {
+				top: calc(100% - 12px);
+			}
+			100% {
+				top: 0;
+			}
+		}
+		@keyframes columnMove2 {
+			0% {
+				top: calc(100% - 12px);
+			}
+			50% {
+				top: 0;
+			}
+			100% {
+				top: calc(100% - 12px);
+			}
+		}
+		@keyframes rowMove {
+			0% {
+				left: 0;
+			}
+			50% {
+				left: calc(100% - 12px);
+			}
+			100% {
+				left: 0;
+			}
+		}
+		> span {
+			display: inline-block;
+			position: absolute;
+			background: #009688;
+			border-radius: 50%;
+			height: $size;
+			width: $size;
+			// animation-name: myfirst;
+			// animation-duration: 5s;
+			// animation-timing-function: linear;
+			// animation-delay: 2s;
+			// animation-iteration-count: infinite;
+			// animation-direction: alternate;
+			// animation-play-state: running;
+			&:nth-child(1) {
+				top: 0;
+				left: 0;
+				animation: columnMove 1s ease-in-out 0s infinite;
+				// animation-direction: reverse;
+				// animation-iteration-count: infinite;
+			}
+			&:nth-child(2) {
+				bottom: 0;
+				left: 0;
+				animation: rowMove 1s ease-in-out 0s infinite;
+			}
+			&:nth-child(3) {
+				top: calc(100% - 12px);
+				left: calc(100% - 12px);
+				animation: columnMove2 1s ease-in-out 0s infinite;
+			}
+
+			// animation: myfirst 5s;
+			// -webkit-animation: myfirst 5s; /* Safari 与 Chrome */
+		}
+	}
+}

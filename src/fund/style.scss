@@ -1,0 +1,15 @@
+.wrapper {
+	height: 100%;
+	width: 100%;
+	display: grid;
+	grid-template-columns: minmax(300px, 1fr) 5fr;
+	grid-template-rows: minmax(500px, 1fr);
+}
+.menu {
+	background: #71ccd1;
+	overflow-y: auto;
+}
+.board {
+	background: #fefefe;
+	overflow-y: auto;
+}

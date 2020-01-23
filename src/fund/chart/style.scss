@@ -1,0 +1,207 @@
+// .wrapper {
+// 	height: 100%;
+// 	width: 100%;
+// 	display: flex;
+// 	flex-direction: row;
+// }
+// .menu {
+// 	width: 300px;
+// 	height: inherit;
+// 	display: flex;
+// 	flex-direction: column;
+// 	justify-content: space-between;
+// }
+// .board {
+// 	width: 100%;
+// 	// height: 100%;
+// 	flex: 1;
+// 	display: flex;
+// 	flex-direction: column;
+// 	background: #71ccd1;
+// 	// overflow-y: scroll;
+// 	// .header {
+// 	// 	height: 50px;
+// 	// 	background: brown;
+// 	// }
+// 	.bar {
+// 		// height: 50px;
+// 	}
+// 	.content {
+// 		flex: 1;
+// 		width: 100%;
+// 		// padding: 10px;
+// 		box-sizing: border-box;
+// 		display: flex;
+// 		flex-direction: column;
+// 	}
+// }
+// .menuContent {
+// 	background: #eeeeee;
+// 	height: 100%;
+// 	width: 100%;
+// }
+// .tableTitle {
+// 	background: #eeeeee;
+// 	height: 30px;
+// 	line-height: 30px;
+// 	text-indent: 1rem;
+// 	color: #333333;
+// }
+// .emphasize {
+// 	color: #333333;
+// 	font-weight: 500;
+// }
+// .rowStyle {
+// 	background: #efefef;
+// 	&:nth-child(2n) {
+// 		background: #fefefe;
+// 	}
+// }
+
+// .table {
+// 	width: 100%;
+// 	height: 100%;
+// 	flex: 1;
+// 	display: flex;
+// 	flex-direction: column;
+// 	background: #fefefe;
+// 	box-sizing: border-box;
+// 	> thead,
+// 	> tfoot {
+// 		width: 100%;
+// 		box-sizing: border-box;
+// 		background: #fff;
+// 		border-bottom: 1px solid #d6d6d6;
+// 		padding-right: 8px;
+// 		> tr {
+// 			padding: 5px;
+// 			line-height: 30px;
+// 			> td {
+// 				line-height: unset;
+// 			}
+// 		}
+// 	}
+// 	> div {
+// 		display: block;
+// 		overflow: hidden;
+// 		overflow-y: auto;
+// 		> tbody {
+// 			display: flex;
+// 			flex-direction: column;
+// 			flex: 1;
+// 			> tr {
+// 				padding: 5px;
+// 				display: flex;
+// 				width: 100%;
+// 				box-sizing: border-box;
+// 				background: #efefef;
+// 				&:nth-child(2n) {
+// 					background: #fefefe;
+// 				}
+// 				> td {
+// 					line-height: unset;
+// 					padding: 2px 5px;
+// 					box-sizing: border-box;
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+// .nav {
+// 	height: 40px;
+// 	padding: 5px;
+// 	box-sizing: border-box;
+// 	background: #dfdfdf;
+// }
+// .thead {
+// 	display: flex;
+// 	flex-direction: row;
+// 	justify-content: space-evenly;
+// 	> td {
+// 		flex: 1;
+// 	}
+// }
+
+.content {
+	height: 100%;
+	display: grid;
+	grid-template-rows: 1fr auto;
+	:global {
+		.resetTable {
+			.cell {
+				padding: 7px 1px;
+			}
+			.ant-table {
+				.ant-table-title,
+				.ant-table-footer,
+				.ant-table-body tbody tr td {
+					padding: 0;
+				}
+				.ant-table-title,
+				.ant-table-footer {
+					border: none;
+				}
+				.ant-table-header thead tr th {
+					@extend .cell;
+					height: 36px;
+					box-sizing: border-box;
+					padding: 0;
+				}
+				.ant-table-body tbody tr td {
+					@extend .cell;
+					border: none;
+					padding: 5px 1px;
+				}
+			}
+			// .ant-table-title {
+			// 	padding: 0 !important;
+			// }
+		}
+	}
+	.rowStyle {
+		background: #efefef;
+		&:nth-child(2n) {
+			background: #fefefe;
+		}
+	}
+	.tableContent {
+		overflow-y: auto;
+	}
+	.tableTitle {
+		background: #eeeeee;
+		padding: 5px;
+		text-indent: 1rem;
+		color: #333333;
+		display: grid;
+		grid-template-columns: auto 100px;
+		> div {
+			vertical-align: middle;
+			line-height: 30px;
+		}
+	}
+	.chartContent {
+		height: 100%;
+		width: 100%;
+		display: grid;
+		grid-template-columns: 2fr 1fr;
+		grid-template-rows: 1fr 1fr 1fr;
+		grid-template-areas:
+			"a b"
+			"a c"
+			"a d";
+		> div {
+			&:nth-child(1) {
+				grid-area: a;
+			}
+			&:nth-child(2) {
+				grid-area: b;
+			}
+			&:nth-child(3) {
+				grid-area: c;
+			}
+			&:nth-child(4) {
+				grid-area: d;
+			}
+		}
+	}
+}
