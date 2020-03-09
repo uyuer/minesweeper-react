@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './style.scss';
 import Header from '../header';
 import Footer from '../footer';
-import config, { gridSize } from './../config/index';
+import gameConfig, { gridSize } from './../config/index';
 
 export default class Play extends React.Component {
     constructor(props) {
@@ -15,11 +15,10 @@ export default class Play extends React.Component {
         }
         this.board = React.createRef();
     }
-    status = {
+    gameStatus = {
         grade: null, // 游戏难度 字符串
-        gradeConfig: null, // 游戏难度详细配置 对象
-        status: 0,// [0: '未开始', 1: '进行中', 2: '暂停', 3: '游戏胜利', 4: '游戏失败'] 字符串
-        gameStatus: null,
+        config: null, // 游戏难度详细配置 对象
+        gStatus: 0, // [0: '未开始', 1: '进行中', 2: '暂停', 3: '游戏胜利', 4: '游戏失败'] 字符串
         startTime: '',
         endTime: '',
         time: 0,
@@ -29,13 +28,12 @@ export default class Play extends React.Component {
     }
     componentWillMount() {
         let { grade } = this.props.match.params;
-        let gradeConfig = config[grade];
-        this.status = {
-            ...this.status,
+        let config = gameConfig[grade];
+        this.gameStatus = {
+            ...this.gameStatus,
             grade,
-            gradeConfig,
-            status: 1,
-            gameStatus: 1,
+            config,
+            gStatus: 1,
             startTime: new Date().getTime()
         }
         this.createGame();
@@ -53,13 +51,13 @@ export default class Play extends React.Component {
     }
     // 状态变化时变化函数
     statusChange = (value = {}) => {
-        this.status = { ...this.status, ...value };
-        return this.status;
+        this.gameStatus = { ...this.gameStatus, ...value };
+        return this.gameStatus;
     }
     // 构建数据
     createGame() {
-        let { grade, gradeConfig } = this.status;
-        let { amount, rectangle } = gradeConfig;
+        let { grade, config } = this.gameStatus;
+        let { amount, rectangle } = config;
         let [x, y] = rectangle;
         if (!grade) {
             return;
@@ -116,15 +114,15 @@ export default class Play extends React.Component {
     }
     gameOver = (index) => {
         let { gameData } = this.state;
-        gameData.splice(index, 1, { ...gameData[index], status: 4 });
+        gameData.splice(index, 1, { ...gameData[index], gStatus: 4 });
         this.setState({
             gameData
         })
     }
     onClickHandle = (index, item, e) => {
         console.log(index, e)
-        let { status: gameStatus } = this.status;
-        if (gameStatus != 1) {
+        let { gStatus } = this.gameStatus;
+        if (gStatus != 1) {
             return;
         }
         let { isMines, status } = item;
@@ -132,11 +130,12 @@ export default class Play extends React.Component {
             return;
         }
         if (isMines) {
-            this.statusChange({ status: 4 });
+            this.statusChange({ gStatus: 4 });
             this.gameOver(index);
         } else {
             this.computeMinesHandle(index);
         }
+        console.log(this.gameStatus);
 
     }
     onContextMenuHandle = (index, item, e) => {
@@ -144,8 +143,8 @@ export default class Play extends React.Component {
         let { gameData } = this.state;
         let tempStatus = 0;
         switch (item.status) {
-            case 0: tempStatus = 1; this.status.flag += 1; break;
-            case 1: tempStatus = 2; this.status.flag -= 1; break;
+            case 0: tempStatus = 1; this.gameStatus.flag += 1; break;
+            case 1: tempStatus = 2; this.gameStatus.flag -= 1; break;
             case 2: tempStatus = 0; break;
             default: return;
         }
@@ -153,20 +152,46 @@ export default class Play extends React.Component {
         this.setState({
             gameData: newData,
         })
-        console.log(this.status);
+        console.log(this.gameStatus);
+    }
+    isWin = (newData) => {
+        let gameData = newData ? newData : this.state.gameData;
+        let { flag, config } = this.gameStatus;
+        if (flag > config.amount) {
+            return false;
+        }
+        let amount = gameData.reduce((total, currentValue, index, arr) => {
+            let { isMines, status } = currentValue;
+            if ((status === 0 || status === 1 || status === 2)) {
+                total++
+            }
+            return total;
+        }, 0);
+        if (amount === config.amount) {
+            return true;
+        }
+        return false;
     }
     computeMinesHandle = (i) => {
         let { gameData } = this.state;
-        let [x, y] = this.status.gradeConfig.rectangle;
+        let [x, y] = this.gameStatus.config.rectangle;
         let initX = i % x;
         let initY = Math.floor(i / x);
 
         let newData = this.compute(gameData, [initX, initY], 1);
-        console.log(newData)
-        this.setState({ gameData: newData })
+        console.log(newData, this.gameStatus);
+        let res = false;
+
+        this.setState({ gameData: newData }, () => {
+            let res = this.isWin();
+            if (res) {
+                this.statusChange({ gStatus: 3, endTime: new Date().getTime() })
+                console.log('获胜', this.gameStatus);
+            }
+        })
     }
     pieceDataChange = (gameData, index, value) => {
-        let [x, y] = this.status.gradeConfig.rectangle;
+        let [x, y] = this.gameStatus.config.rectangle;
         gameData[index] = { ...gameData[index], ...value };
         return gameData;
     }
@@ -178,7 +203,7 @@ export default class Play extends React.Component {
     // }
     compute = (gameData, [currentX, currentY], count, checkObj = {}) => {
         // TODO: 优化问题:边界时会对方块重复检查
-        let [x, y] = this.status.gradeConfig.rectangle;
+        let [x, y] = this.gameStatus.config.rectangle;
         // 坐标点周围待检查方块,过滤坐标点超出的方块和非正常方块
         // 调整了一下检查顺序[顺序检查->对角检查]
         let toCheck = [

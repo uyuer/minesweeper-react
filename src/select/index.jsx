@@ -12,53 +12,42 @@ function Select() {
     console.log(id)
     let buttons = [
         {
-            bgColor: '#33cabc',
-            icon: <Icon type="play-square" />,
-            name: '简单(9&9)',
+            bgColor: '#4caf50',
+            icon: null,
+            name: '简单 9x9',
             link: '/play/simple'
         },
         {
             bgColor: '#e99315',
-            icon: <Icon type="history" />,
-            name: '简单(16&9)',
+            icon: null,
+            name: '普通 16x9',
             link: '/play/normal'
         },
         {
             bgColor: '#f44336',
-            icon: <Icon type="setting" />,
-            name: '简单(16&16)',
+            icon: null,
+            name: '困难 16x16',
             link: '/play/diffcult'
         },
         {
             bgColor: '#673ab7',
-            icon: <Icon type="info-circle" />,
+            icon: null,
             name: '自定义',
             link: '/custom'
         },
     ]
     return (
         <div className={styles.wrapper}>
-            <div className={styles.menu}>
-                <div>
-                    <Header />
-                    <div>
-                        <div>
-                            <div>back</div>
-                        </div>
-                        <div>
-                            <MenuBtn buttons={buttons} />
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <Footer />
-                </div>
+            <div className={styles.header}>
+                <div className={styles.title}>选择游戏难度</div>
             </div>
-            <div className={styles.board}>
-
+            <div className={styles.content}>
+                <MenuBtn buttons={buttons} />
+            </div>
+            <div className={styles.footer}>
+                <Footer />
             </div>
         </div>
-
     )
 }
 

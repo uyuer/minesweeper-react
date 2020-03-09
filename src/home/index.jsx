@@ -11,31 +11,31 @@ class Home extends React.Component {
     render() {
         let buttons = [
             {
-                bgColor: '#33cabc',
+                bgColor: '#009688',
                 icon: <Icon type="play-square" />,
                 name: '开始游戏',
                 link: '/select'
             },
             {
-                bgColor: '#e99315',
+                bgColor: '#4CAF50',
                 icon: <Icon type="history" />,
                 name: '历史统计',
                 link: '/history'
             },
             {
-                bgColor: '#f44336',
+                bgColor: '#FF5722',
                 icon: <Icon type="setting" />,
                 name: '游戏设置',
                 link: '/setting'
             },
             {
-                bgColor: '#673ab7',
+                bgColor: '#03a9f4',
                 icon: <Icon type="info-circle" />,
                 name: '关于我们',
                 link: '/aboutUs'
             },
             {
-                bgColor: '#03a9f4',
+                bgColor: '#3F51B5',
                 icon: <Icon type="more" />,
                 name: '更多游戏',
                 link: '/more'
@@ -43,17 +43,12 @@ class Home extends React.Component {
         ]
         return (
             <div className={styles.wrapper}>
-                <div className={styles.menu}>
-                    <div>
-                        <Header />
-                        <MenuBtn buttons={buttons} />
-                    </div>
-                    <div>
-                        <Footer />
-                    </div>
+                <div className={styles.content}>
+                    <Header />
+                    <MenuBtn buttons={buttons} />
                 </div>
-                <div className={styles.board}>
-
+                <div className={styles.footer}>
+                    <Footer />
                 </div>
             </div>
         )

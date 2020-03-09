@@ -1,18 +1,19 @@
 .wrapper {
-	height: 100%;
-	width: 100%;
-	display: flex;
-	flex-direction: row;
-}
-.menu {
-	width: 300px;
-	height: inherit;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-}
-.board {
-	flex: 1;
-	height: inherit;
-	background: #71ccd1;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+    }
+
+    .footer {}
 }
