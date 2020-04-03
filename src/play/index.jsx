@@ -3,6 +3,8 @@ import styles from './style.scss';
 import Header from '../header';
 import Footer from '../footer';
 import gameConfig, { gridSize } from './../config/index';
+import { Icon } from 'antd';
+import moment from 'moment';
 
 export default class Play extends React.Component {
     constructor(props) {
@@ -13,6 +15,7 @@ export default class Play extends React.Component {
             boardStyle: {},
             gridStyle: {}
         }
+        this.timer = null;
         this.board = React.createRef();
     }
     gameStatus = {
@@ -27,32 +30,50 @@ export default class Play extends React.Component {
         // 统计信息 对象 {游戏状态, 开始时间, 结束时间, 游戏时长, 插旗标记数, 查杀炸弹数}
     }
     componentWillMount() {
-        let { grade } = this.props.match.params;
-        let config = gameConfig[grade];
-        this.gameStatus = {
-            ...this.gameStatus,
-            grade,
-            config,
-            gStatus: 1,
-            startTime: new Date().getTime()
-        }
-        this.createGame();
+
     }
     componentDidMount() {
-        console.log(this.board)
-        if (!this.board) {
-            return;
-        }
+        this.init();
         // this.board.current.addEventListener('contextmenu', (e) => {
         //     e.preventDefault()
         //     e.stopPropagation()
         //     console.log(123, e)
         // })
     }
+    init = () => {
+        let { grade } = this.props.match.params;
+        let config = gameConfig[grade];
+        if (!this.board) {
+            return;
+        }
+        this
+            .statusChange({
+                grade,
+                config,
+                gStatus: 1,
+                startTime: new Date().getTime()
+            })
+            .createGame()
+            .timeStart();
+    }
+    timeStart = () => {
+        this.clearTimer();
+        this.timer = setTimeout(() => {
+            let time = this.gameStatus.time + 1;
+            this
+                .statusChange({ time })
+                .timeStart()
+                .setState({ time });
+        }, 1000);
+        return this;
+    }
+    clearTimer = () => {
+        this.timer = null;
+    }
     // 状态变化时变化函数
     statusChange = (value = {}) => {
         this.gameStatus = { ...this.gameStatus, ...value };
-        return this.gameStatus;
+        return this;
     }
     // 构建数据
     createGame() {
@@ -94,6 +115,7 @@ export default class Play extends React.Component {
             gridStyle,
         })
         console.log(data);
+        return this;
     }
     // 生成长度为10的数组a, 压入1~10(或其他你想要的数)
     // for (i = a.length - 1; i > 0; i--) {
@@ -106,7 +128,8 @@ export default class Play extends React.Component {
         gameData.splice(index, 1, newValue);
         this.setState({
             gameData
-        })
+        });
+        return this;
     }
     computeNewData = (gameData, index, newValue) => {
         gameData.splice(index, 1, newValue);
@@ -259,19 +282,42 @@ export default class Play extends React.Component {
     history = () => {
 
     }
+    convertTime = (time) => {
+        let minute = Math.floor(time / 60);
+        let minuteStr = minute > 9 ? minute : '0' + minute;
+        let second = time % 60;
+        let secondStr = second > 9 ? second : '0' + second;
+        if (minute >= 60) {
+            return '59:59';
+        }
+        return minuteStr + ':' + secondStr;
+    }
     render() {
         return (
             <div className={styles.wrapper}>
                 <div className={styles.menu}>
                     <div>
                         <Header />
-                        <div>
-                            <div>
-                                <div></div>
-                            </div>
-                            <div>
-                            </div>
-                        </div>
+                        <table className={styles.infoList}>
+                            <th>
+                                <td>
+                                    <span><Icon type="flag" /></span>
+                                    <span>标记</span>
+                                </td>
+                                <td>
+                                    <span>{this.gameStatus.flag}/{(0 || (this.gameStatus.config && this.gameStatus.config.amount))}</span>
+                                </td>
+                            </th>
+                            <th>
+                                <td>
+                                    <span><Icon type="clock-circle" /></span>
+                                    <span>时间</span>
+                                </td>
+                                <td>
+                                    <span>{this.convertTime(this.gameStatus.time)}</span>
+                                </td>
+                            </th>
+                        </table>
                     </div>
                     <div>
                         <Footer />
@@ -325,7 +371,7 @@ export default class Play extends React.Component {
                                     return (
                                         <span
                                             className={className}
-                                            style={{ ...this.state.gridStyle, borderColor: isMines ? '#607d8b' : '', color: colors[num - 1] }}
+                                            style={{ ...this.state.gridStyle, borderColor: isMines ? '' : '', color: colors[num - 1] }}
                                             key={index}
                                             onClick={this.onClickHandle.bind(null, index, item)}
                                             onContextMenu={this.onContextMenuHandle.bind(null, index, item)}
