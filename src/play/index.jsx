@@ -13,7 +13,9 @@ export default class Play extends React.Component {
             level: null,
             gameData: null,
             boardStyle: {},
-            gridStyle: {}
+            gridStyle: {},
+            historyIndex: -1,
+            historyGameData: [],
         }
         this.timer = null;
         this.board = React.createRef();
@@ -47,34 +49,57 @@ export default class Play extends React.Component {
             return;
         }
         this
-            .statusChange({
-                grade,
-                config,
-                gStatus: 1,
-                startTime: new Date().getTime()
-            })
+            .initGameStatus()
             .createGame()
             .timeStart();
     }
+    initGameStatus = () => {
+        let { grade } = this.props.match.params;
+        let config = gameConfig[grade];
+        this.changeGameStatus({
+            grade,
+            config,
+            gStatus: 1,
+            startTime: new Date().getTime(),
+            time: 0,
+            flag: 0
+        });
+        return this;
+    }
+    initTime = () => {
+        this
+            .clearTimer()
+            .setState({
+                time: 0
+            })
+        return this;
+    }
     timeStart = () => {
         this.clearTimer();
-        this.timer = setTimeout(() => {
+        this.timer = setInterval(() => {
             let time = this.gameStatus.time + 1;
             this
-                .statusChange({ time })
-                .timeStart()
+                .changeGameStatus({ time })
                 .setState({ time });
         }, 1000);
         return this;
     }
     clearTimer = () => {
-        this.timer = null;
-    }
-    // 状态变化时变化函数
-    statusChange = (value = {}) => {
-        this.gameStatus = { ...this.gameStatus, ...value };
+        clearInterval(this.timer);
         return this;
     }
+    // 时间转换, 将秒计数转换为分秒
+    convertTime = (time) => {
+        let minute = Math.floor(time / 60);
+        let minuteStr = minute > 9 ? minute : '0' + minute;
+        let second = time % 60;
+        let secondStr = second > 9 ? second : '0' + second;
+        if (minute >= 60) {
+            return '59:59';
+        }
+        return minuteStr + ':' + secondStr;
+    }
+
     // 构建数据
     createGame() {
         let { grade, config } = this.gameStatus;
@@ -113,7 +138,7 @@ export default class Play extends React.Component {
             gameData: data,
             boardStyle,
             gridStyle,
-        })
+        }, this.history);
         console.log(data);
         return this;
     }
@@ -123,25 +148,32 @@ export default class Play extends React.Component {
     //     交换a[i]和a[j]
     // }
 
-    changeGameData = (index, newValue) => {
-        let { gameData } = this.state;
-        gameData.splice(index, 1, newValue);
-        this.setState({
-            gameData
-        });
+    // 更改游戏状态
+    changeGameStatus = (value = {}) => {
+        this.gameStatus = { ...this.gameStatus, ...value };
         return this;
     }
-    computeNewData = (gameData, index, newValue) => {
-        gameData.splice(index, 1, newValue);
+    // 更改单条数据内容
+    pieceDataChange = (gameData, index, value) => {
+        let [x, y] = this.gameStatus.config.rectangle;
+        gameData[index] = { ...gameData[index], ...value };
         return gameData;
     }
-    gameOver = (index) => {
-        let { gameData } = this.state;
-        gameData.splice(index, 1, { ...gameData[index], gStatus: 4 });
-        this.setState({
-            gameData
-        })
-    }
+
+    // changeGameData = (index, newValue) => {
+    //     let { gameData } = this.state;
+    //     gameData.splice(index, 1, newValue);
+    //     this.setState({
+    //         gameData
+    //     });
+    //     return this;
+    // }
+    // computeNewData = (gameData, index, newValue) => {
+    //     gameData.splice(index, 1, newValue);
+    //     return gameData;
+    // }
+
+    // 左键点击
     onClickHandle = (index, item, e) => {
         console.log(index, e)
         let { gStatus } = this.gameStatus;
@@ -153,14 +185,16 @@ export default class Play extends React.Component {
             return;
         }
         if (isMines) {
-            this.statusChange({ gStatus: 4 });
-            this.gameOver(index);
+            this.onClickMines(index)
+                .changeGameStatus({ gStatus: 4 })
+                .clearTimer()
+                .gameOver()
         } else {
             this.computeMinesHandle(index);
         }
         console.log(this.gameStatus);
-
     }
+    // 右键点击
     onContextMenuHandle = (index, item, e) => {
         e.preventDefault();
         let { gameData } = this.state;
@@ -174,9 +208,26 @@ export default class Play extends React.Component {
         let newData = this.pieceDataChange(gameData, index, { status: tempStatus });
         this.setState({
             gameData: newData,
-        })
+        }, this.history)
         console.log(this.gameStatus);
     }
+
+    // 点击炸弹, 将点击炸弹状态更改为红色爆炸, 返回this
+    onClickMines = (index) => {
+        this.setState({
+            gameData: this.pieceDataChange(this.state.gameData, index, { status: 4 })
+        })
+        return this;
+    }
+    // 游戏结束
+    gameOver = (index) => {
+        let { gameData } = this.state;
+        gameData.splice(index, 1, { ...gameData[index], gStatus: 4 });
+        this.setState({
+            gameData
+        })
+    }
+    // 判断是否获胜
     isWin = (newData) => {
         let gameData = newData ? newData : this.state.gameData;
         let { flag, config } = this.gameStatus;
@@ -195,6 +246,7 @@ export default class Play extends React.Component {
         }
         return false;
     }
+    // 点击后检查不是炸弹, 则开始计算
     computeMinesHandle = (i) => {
         let { gameData } = this.state;
         let [x, y] = this.gameStatus.config.rectangle;
@@ -206,24 +258,22 @@ export default class Play extends React.Component {
         let res = false;
 
         this.setState({ gameData: newData }, () => {
+            this.history();
             let res = this.isWin();
             if (res) {
-                this.statusChange({ gStatus: 3, endTime: new Date().getTime() })
+                this.changeGameStatus({ gStatus: 3, endTime: new Date().getTime() })
                 console.log('获胜', this.gameStatus);
             }
         })
     }
-    pieceDataChange = (gameData, index, value) => {
-        let [x, y] = this.gameStatus.config.rectangle;
-        gameData[index] = { ...gameData[index], ...value };
-        return gameData;
-    }
+
     // pieceDataChange = (gameData, coordinates, value) => {
     //     let [x, y] = this.state.level.rectangle;
     //     let index = coordinates[0] + coordinates[1] * x;
     //     gameData[index] = { ...gameData[index], ...value };
     //     return gameData;
     // }
+    // 此处有bug!!!!
     compute = (gameData, [currentX, currentY], count, checkObj = {}) => {
         // TODO: 优化问题:边界时会对方块重复检查
         let [x, y] = this.gameStatus.config.rectangle;
@@ -234,6 +284,8 @@ export default class Play extends React.Component {
             [currentX + 1, currentY + 1], // 右下角
             [currentX + 1, currentY - 1], // 右上角
             [currentX - 1, currentY + 1], // 左下角
+
+            [currentX, currentY],
 
             [currentX + 0, currentY - 1], // 上中块
             [currentX + 0, currentY + 1], // 下中块
@@ -280,17 +332,88 @@ export default class Play extends React.Component {
         )
     }
     history = () => {
-
+        let { gameData, historyGameData, historyIndex } = this.state;
+        let str = gameData.reduce((total, currentValue, index, arr) => {
+            let { status = 0, num = 0, isMines = 0 } = currentValue;
+            let lastIndex = arr.length - 1;
+            total += [status, num, isMines].join('') + (index >= lastIndex ? '' : ',');
+            return total;
+        }, '');
+        historyGameData[historyIndex + 1] = str;
+        this.setState({
+            historyGameData,
+            historyIndex: historyIndex + 1
+        });
+        return this;
     }
-    convertTime = (time) => {
-        let minute = Math.floor(time / 60);
-        let minuteStr = minute > 9 ? minute : '0' + minute;
-        let second = time % 60;
-        let secondStr = second > 9 ? second : '0' + second;
-        if (minute >= 60) {
-            return '59:59';
+    parseHistoryData = () => {
+        let { historyIndex, historyGameData } = this.state;
+        let arr = historyGameData[historyIndex].split(',').reduce((total, currentValue, index, arr) => {
+            let [status = 0, num = 0, isMines = 0] = currentValue.split('').map(strNum => strNum - 0);
+            total.push({ status, num, isMines });
+            return total;
+        }, []);
+        this.setState({ gameData: arr });
+    }
+    // 后退一步
+    backStep = () => {
+        let { historyIndex } = this.state;
+        if (historyIndex <= 0) {
+            return;
         }
-        return minuteStr + ':' + secondStr;
+        this.setState({
+            historyIndex: historyIndex - 1
+        }, this.parseHistoryData)
+    }
+    // 前进一步
+    nextStep = () => {
+        let { historyIndex, historyGameData } = this.state;
+        if (historyIndex >= historyGameData.length - 1) {
+            return;
+        }
+        this.setState({
+            historyIndex: historyIndex + 1
+        }, this.parseHistoryData)
+    }
+    // 重置游戏
+    resetGame = () => {
+        let { historyIndex, historyGameData } = this.state;
+        console.log(this.timer)
+        this.clearTimer()
+        this
+            .initGameStatus()
+            .initTime()
+            .timeStart()
+            .setState({
+                historyIndex: 0,
+                historyGameData: historyGameData.splice(0, 1)
+            }, this.parseHistoryData)
+        // this.timeStart()
+        console.log(this.gameStatus)
+    }
+    pause = () => {
+        this
+            .changeGameStatus({ gStatus: 2 })
+            .clearTimer()
+            .forceUpdate();
+    }
+    continue = () => {
+        this
+            .changeGameStatus({ gStatus: 1 })
+            .timeStart()
+            .forceUpdate();
+    }
+    // 回到主菜单
+    goMenu = () => {
+        this.props.history.push('/');
+    }
+    createMenuButton = () => {
+        let gStatus = this.gameStatus.gStatus;
+        switch (gStatus) {
+            case 1: return <button onClick={this.pause}>暂停游戏</button>;
+            case 2: return <button onClick={this.continue}>继续游戏</button>;
+            default: return;
+        }
     }
     render() {
         return (
@@ -298,28 +421,70 @@ export default class Play extends React.Component {
                 <div className={styles.menu}>
                     <div>
                         <Header />
-                        <table className={styles.infoList}>
-                            <th>
-                                <td>
-                                    <span><Icon type="flag" /></span>
-                                    <span>标记</span>
-                                </td>
-                                <td>
-                                    <span>{this.gameStatus.flag}/{(0 || (this.gameStatus.config && this.gameStatus.config.amount))}</span>
-                                </td>
-                            </th>
-                            <th>
-                                <td>
-                                    <span><Icon type="clock-circle" /></span>
-                                    <span>时间</span>
-                                </td>
-                                <td>
-                                    <span>{this.convertTime(this.gameStatus.time)}</span>
-                                </td>
-                            </th>
+                        <table className={styles.infoTable}>
+                            <tbody className={styles.infoBody}>
+                                <tr>
+                                    <td>
+                                        <span><Icon type="crown" /></span>
+                                        <span>难度</span>
+                                    </td>
+                                    <td>
+                                        <span>{(this.gameStatus.config && this.gameStatus.config.text)}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span><Icon type="flag" /></span>
+                                        <span>标记</span>
+                                    </td>
+                                    <td>
+                                        <span>{this.gameStatus.flag}/{(0 || (this.gameStatus.config && this.gameStatus.config.amount))}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span><Icon type="clock-circle" /></span>
+                                        <span>时间</span>
+                                    </td>
+                                    <td>
+                                        <span>{this.convertTime(this.gameStatus.time)}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                     <div>
+                        <div>
+                            <table>
+                                <tbody className={styles.infoList}>
+                                    <tr>
+                                        <td>
+                                            {this.createMenuButton()}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button onClick={this.resetGame}>重置本局</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button onClick={this.goMenu}>返回菜单</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button onClick={this.backStep}>后退一步</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button onClick={this.nextStep}>前进一步</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                         <Footer />
                     </div>
                 </div>
@@ -375,7 +540,7 @@ export default class Play extends React.Component {
                                             key={index}
                                             onClick={this.onClickHandle.bind(null, index, item)}
                                             onContextMenu={this.onContextMenuHandle.bind(null, index, item)}
-                                        >{num || ''}</span>
+                                        >{num > 0 ? num : ''}</span>
                                     )
                                 })
                             }

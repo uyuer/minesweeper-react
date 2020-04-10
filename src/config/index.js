@@ -1,3 +1,11 @@
+/*
+ * @Author: your name
+ * @Date: 2019-11-05 09:25:08
+ * @LastEditTime: 2020-04-10 17:26:49
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \minesweeper\src\config\index.js
+ */
 
 export default {
     simple: {
